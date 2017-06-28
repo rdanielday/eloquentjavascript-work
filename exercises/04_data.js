@@ -81,9 +81,40 @@ function nth(list, num) {
   if (list.value === num) {
     return list;
   } else if (list.rest != null) {
-    return nth(list.rest, num)
+    return nth(list.rest, num);
   }
 }
 
 const found = nth(testList, 3);
 console.log(found);
+
+// Deep comparison
+
+function deepEqual(obj1, obj2) {
+  if (Object.keys(obj1).length !== Object.keys(obj2).length) {
+    return false;
+  } else {
+    for (let key in obj1) {
+      if (obj2.hasOwnProperty(key)) {
+        if (typeof obj1[key] == 'object' && obj1[key] != null) {
+          return deepEqual(obj1[key], obj2[key]);
+        } else if (obj1[key] !== obj2[key]) {
+          return false;
+        }
+      } else {
+        return false;
+      }
+    }
+    return true;
+  }
+}
+
+const obj1 = {this: 'is', an: 'object', a: {cat: 'was', here: 'today'}};
+const obj2 = {and: 'another', object: {over: 'here'}, but: 'more!'};
+const obj3 = {this: 'is', an: 'object', a: {cat: 'had!', here: 'today'}};
+
+const obj = {here: {is: "an"}, object: 2};
+
+console.log(deepEqual(obj, obj));
+console.log(deepEqual(obj, {here: 1, object: 2}));
+console.log(deepEqual(obj, {here: {is: "an"}, object: 2}));
