@@ -27,7 +27,7 @@ var difference = [];
 
 daughtersWithMothers.forEach(daughter => {
   var mother = byName[daughter.mother];
-  var ageDifference = daughter.born - mother.born; 
+  var ageDifference = daughter.born - mother.born;
   difference.push(ageDifference);
 });
 
@@ -79,3 +79,28 @@ console.log(centuryAges);
 var eighteen = average(centuryAges[18]);
 
 console.log(eighteen)
+
+// Every and then some
+
+function every(arr, fn) {
+  for (let i = 0; i < arr.length; i++) {
+    if (!(fn(arr[i]))) return false;
+  }
+  return true;
+}
+
+var testArr = ['cat', 'pants', 1];
+console.log(every(testArr, function(i) {
+  return typeof i == 'string';
+}));
+
+function some(arr, fn) {
+  for (let i = 0; i < arr.length; i++) {
+    if (fn(arr[i])) return true;
+  }
+  return false;
+}
+
+console.log(some(testArr, function(i) {
+  return typeof i == 'string';
+}));
