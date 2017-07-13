@@ -265,6 +265,34 @@ PlantEater.prototype.act = function(view) {
     return {type: "move", direction: space};
 };
 
+function SmartPlantEater() {
+  this.energy = 20;
+}
+SmartPlantEater.prototype.act = function(view) {
+  var space = view.find(" ");
+  if (this.energy > 60 && space)
+    return {type: "reproduce", direction: space};
+  var plant = view.find("*");
+  if (this.energy <= 80 && plant)
+    return {type: "eat", direction: plant};
+  if (space)
+    return {type: "move", direction: space};
+};
+
+function Tiger() {
+  this.energy = 50;
+}
+Tiger.prototype.act = function(view) {
+  var space = view.find(" ");
+  if (this.energy > 200 && space)
+    return {type: "reproduce", direction: space};
+  var PlantEater = view.find("O");
+  if (PlantEater)
+    return {type: "eat", direction: PlantEater};
+  if (space)
+    return {type: "move", direction: space};
+};
+
 var world = new World(plan, {"#": Wall,
                              "o": BouncingCritter});
 
