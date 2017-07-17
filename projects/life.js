@@ -185,7 +185,7 @@ WallFollower.prototype.act = function(view) {
 function LifelikeWorld(map, legend) {
   World.call(this, map, legend);
 }
-LifelifeWorld.prototype = Object.create(World.prototype);
+LifelikeWorld.prototype = Object.create(World.prototype);
 
 var actionTypes = Object.create(null);
 
