@@ -1,4 +1,4 @@
-const MOUNTAINS = require('./mountains');
+var MOUNTAINS = require('./mountains');
 
 function rowHeights(rows) {
   return rows.map(function(row) {
