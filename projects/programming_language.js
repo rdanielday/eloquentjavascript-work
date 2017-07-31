@@ -65,8 +65,15 @@ function parseExpression(program) {
   return parseApply(expr, program.slice(match[0].length));
 }
 
+// function skipSpace(string) {
+//   var first = string.search(/\S/);
+//   if (first == -1) return "";
+//   return string.slice(first);
+// }
+
 function skipSpace(string) {
-  var first = string.search(/\S/);
+  var nocomment = string.replace(/#.*\n/g, '')
+  var first = nocomment.search(/\S/);
   if (first == -1) return "";
   return string.slice(first);
 }
@@ -165,3 +172,138 @@ specialForms["while"] = function(args, env) {
   // for lack of a meaningful result.
   return false;
 };
+
+specialForms["do"] = function(args, env) {
+  var value = false;
+  args.forEach(function(arg) {
+    value = evaluate(arg, env);
+  });
+  return value;
+};
+
+// Define takes a word and an expression to assign values to variables. It returns
+// the assigned value.
+
+specialForms["define"] = function(args, env) {
+  if (args.length != 2 || args[0].type != "word")
+    throw new SyntaxError("Bad use of define");
+  var value = evaluate(args[1], env);
+  env[args[0].name] = value;
+  return value;
+};
+
+// The Environment
+// ===============
+
+// The environment is an object with properties that are the variables that have
+// been assigned and the values are the values assigned to those variables.
+
+// To start, we need booleans.
+
+var topEnv = Object.create(null);
+
+topEnv["true"] = true;
+topEnv["false"] = false;
+
+var prog = parse("if(true, false, true)");
+console.log(evaluate(prog, topEnv));
+
+// Arithmetic and comparisons
+
+["+", "-", "*", "/", "==", "<", ">"].forEach(function(op) {
+  topEnv[op] = new Function("a, b", "return a " + op + " b;");
+});
+
+topEnv["print"] = function(value) {
+  console.log(value);
+  return value;
+};
+
+function run() {
+  var env = Object.create(topEnv);
+  var program = Array.prototype.slice
+    .call(arguments, 0).join("\n");
+  return evaluate(parse(program), env);
+}
+
+run("do(define(total, 0),",
+    " define(count, 1),",
+    " while(<(count, 11),",
+    "   do(define(total, +(total, count)),",
+    "     define(count, +(count, 1)))),",
+    "   print(total))");
+    
+// ========= //
+// Functions //
+// ========= //
+
+// Functions are a special form that uses the last argument as the function body
+// and all other args as the function arguments. Like in JS, it creates it's own
+// sub-environment.
+
+specialForms["fun"] = function(args, env) {
+  if (!args.length)
+    throw new SyntaxError("Functions need a body");
+  function name(expr) {
+    if (expr.type != "word")
+      throw new SyntaxError("Arg names must be words");
+    return expr.name;
+  }
+  var argNames = args.slice(0, args.length - 1).map(name);
+  var body = args[args.length - 1];
+  
+  return function() {
+    if (arguments.length != argNames.length)
+      throw new TypeError("Wrong number of arguments");
+    var localEnv = Object.create(env);
+    for (var i = 0; i < arguments.length; i++)
+      localEnv[argNames[i]] = arguments[i];
+    return evaluate(body, localEnv);
+  };
+};
+
+// The function is evaluated in the local environment created.
+
+run("do(define(plusOne, fun(a, +(a, 1))),",
+    " print(plusOne(10)))");
+    
+run("do(define(pow, fun(base, exp,",
+    " if(==(exp, 0),",
+    "   1,",
+    "   *(base, pow(base, -(exp, 1)))))),",
+    " print(pow(2, 10)))");
+
+// ======== //
+// Exercies //
+// ======== //
+
+// Arrays
+
+topEnv["array"] = function(vals) {
+  return Array.prototype.slice.call(arguments);
+};
+
+topEnv["length"] = function(arr) {
+  return arr.length;
+};
+
+topEnv["element"] = function(arr, n) {
+  return arr[n];
+};
+
+run("do(define(anArray, array(4,3,5)),",
+    "print(length(anArray)))");
+    
+run("do(define(sum, fun(array,",
+    "     do(define(i, 0),",
+    "        define(sum, 0),",
+    "        while(<(i, length(array)),",
+    "          do(define(sum, +(sum, element(array, i))),",
+    "             define(i, +(i, 1)))),",
+    "        sum))),",
+    "   print(sum(array(1, 2, 3))))");
+    
+console.log(parse("# hello\nx"));
+
+
+console.log(parse("a # one\n   # two\n()"));
